@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finalizar Pedido - JV Lanches</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-zinc-950 text-white min-h-screen">
+
+    <div class="max-w-2xl mx-auto px-6 py-12">
+        <h1 class="text-4xl font-bold mb-2">Finalizar Pedido</h1>
+        <p class="text-zinc-400 mb-10">Quase lá! Confirme seus dados.</p>
+
+        <form method="POST" action="/finalizar" class="space-y-8">
+            <div class="bg-zinc-900 p-8 rounded-3xl">
+                <h2 class="text-xl font-semibold mb-6">Seus Dados</h2>
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm text-zinc-400 mb-2">Nome completo</label>
+                        <input type="text" name="nome" required class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-5 py-4">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-zinc-400 mb-2">Telefone (WhatsApp)</label>
+                        <input type="tel" name="telefone" required class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-5 py-4">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-zinc-400 mb-2">Endereço completo ou "Retirada no balcão"</label>
+                        <textarea name="endereco" rows="3" required class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-5 py-4"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-zinc-900 p-8 rounded-3xl">
+                <h2 class="text-xl font-semibold mb-6">Resumo do Pedido</h2>
+                <div class="space-y-4">
+                    {% for item in carrinho %}
+                    <div class="flex justify-between">
+                        <div>
+                            <span>{{ item.nome }}</span>
+                            {% if item.customizacoes %}<span class="text-xs text-zinc-500"> ({{ item.customizacoes }})</span>{% endif %}
+                            <span class="text-zinc-500"> × {{ item.quantidade }}</span>
+                        </div>
+                        <span class="font-medium">R$ {{ (item.preco * item.quantidade)|round(2) }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="border-t border-zinc-700 mt-6 pt-6 flex justify-between text-2xl font-bold">
+                    <span>Total</span>
+                    <span class="text-emerald-400">R$ {{ total|round(2) }}</span>
+                </div>
+            </div>
+
+            <button type="submit" 
+                    class="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold py-6 rounded-3xl text-xl transition">
+                Confirmar Pedido
+            </button>
+        </form>
+    </div>
+</body>
+</html>
