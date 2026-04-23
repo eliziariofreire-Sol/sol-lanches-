@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, session, redirect
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import json
+import os
 
 app = Flask(__name__)
 app.secret_key = "jvlanches-2026-super-secret"
@@ -9,6 +10,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///jvlanches.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
+# ====================== ROTA PRINCIPAL ======================
+@app.route("/")
+def home():
+    return render_template("home.html")
 
 # ====================== MODELOS ======================
 class Item(db.Model):
@@ -31,11 +37,6 @@ class Pedido(db.Model):
     forma_pagamento = db.Column(db.String(30))
 
 # ====================== ROTAS ======================
-
-@app.route("/")
-def home():
-    return render_template("home.html")
-
 @app.route("/cardapio")
 def cardapio():
     itens = Item.query.all()
@@ -47,7 +48,6 @@ def item_detail(item_id):
     return render_template("item_detail.html", item=item)
 
 # ====================== API CARRINHO ======================
-
 @app.route("/api/adicionar", methods=["POST"])
 def adicionar():
     data = request.get_json()
@@ -60,7 +60,6 @@ def adicionar():
     if "carrinho" not in session:
         session["carrinho"] = []
 
-    # verifica se já existe
     for i in session["carrinho"]:
         if i["id"] == item.id:
             i["quantidade"] += 1
@@ -74,14 +73,9 @@ def adicionar():
         })
 
     session.modified = True
-
     total_itens = sum(i["quantidade"] for i in session["carrinho"])
 
-    return jsonify({
-        "sucesso": True,
-        "total_itens": total_itens
-    })
-
+    return jsonify({"sucesso": True, "total_itens": total_itens})
 
 @app.route("/api/adicionar_com_customizacao", methods=["POST"])
 def adicionar_com_customizacao():
@@ -105,10 +99,9 @@ def adicionar_com_customizacao():
     })
 
     session.modified = True
-    return jsonify({"sucesso": True, "nome": item.nome})
+    return jsonify({"sucesso": True})
 
 # ====================== CARRINHO ======================
-
 @app.route("/carrinho")
 def carrinho():
     carrinho = session.get("carrinho", [])
@@ -120,7 +113,6 @@ def checkout():
     return redirect("/carrinho")
 
 # ====================== FINALIZAR ======================
-
 @app.route("/finalizar", methods=["POST"])
 def finalizar_pedido():
     carrinho = session.get("carrinho", [])
@@ -140,7 +132,6 @@ def finalizar_pedido():
 
     db.session.add(pedido)
     db.session.commit()
-
     session.pop("carrinho", None)
 
     return render_template("sucesso.html",
@@ -149,7 +140,6 @@ def finalizar_pedido():
                            nome=request.form.get("nome"))
 
 # ====================== ADMIN ======================
-
 @app.route("/admin")
 def admin_login():
     return render_template("admin_login.html")
@@ -185,7 +175,6 @@ def admin_logout():
     return redirect("/admin")
 
 # ====================== INICIALIZAÇÃO ======================
-
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
@@ -210,9 +199,5 @@ if __name__ == "__main__":
 
             db.session.commit()
 
-    app.run(debug=True)
-import os
-
-if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
